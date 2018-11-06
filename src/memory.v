@@ -12,8 +12,8 @@ module module_data_memory #(parameter WORD_SIZE=32, ADDRESS_BITS=32, MEMORY=1024
 
     // Write to memory if WR_EN is TRUE
     always @(posedge clk) begin
-      if (wr_en) data_out <= mem[addr];
-      else mem[addr] <= data_in;
+      if (wr_en) mem[addr] <= data_in;
+      else data_out <= mem[addr];
     end
 endmodule
 
@@ -23,7 +23,7 @@ endmodule
 module module_instruction_memory #(parameter ADDRESS_BITS=32, MEMORY=1024, WORD_SIZE=32)
                                   (input clk,
                                    input [ADDRESS_BITS-1:0] addr,
-                                   input wr_en,
+                                   input prog,
                                    input [WORD_SIZE-1:0] code,
                                    output reg [WORD_SIZE-1:0] instruction);
 
@@ -32,7 +32,7 @@ module module_instruction_memory #(parameter ADDRESS_BITS=32, MEMORY=1024, WORD_
 
     // Write the instruction to output or save an incoming port.
     always @(posedge clk) begin
-        if (wr_en) instruction_memory[addr] <= code;
+        if (prog) instruction_memory[addr] <= code;
         else instruction <= instruction_memory[addr];
     end
 endmodule

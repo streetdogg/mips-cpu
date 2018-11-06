@@ -51,30 +51,7 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_location_assignment PIN_AA15 -to addr_data
-set_location_assignment PIN_AA14 -to wr_en
-set_location_assignment PIN_AB12 -to addr_data_in[0]
-set_location_assignment PIN_AC12 -to addr_data_in[1]
-set_location_assignment PIN_AF9 -to addr_data_in[2]
-set_location_assignment PIN_AF10 -to addr_data_in[3]
-set_location_assignment PIN_AD11 -to addr_data_in[4]
-set_location_assignment PIN_AD12 -to addr_data_in[5]
-set_location_assignment PIN_AE11 -to addr_data_in[6]
-set_location_assignment PIN_AC9 -to addr_data_in[7]
-set_location_assignment PIN_AA25 -to data_in_display[13]
-set_location_assignment PIN_AA26 -to data_in_display[12]
-set_location_assignment PIN_AB26 -to data_in_display[11]
-set_location_assignment PIN_AB27 -to data_in_display[10]
-set_location_assignment PIN_Y27 -to data_in_display[9]
-set_location_assignment PIN_AA28 -to data_in_display[8]
-set_location_assignment PIN_V25 -to data_in_display[7]
-set_location_assignment PIN_W25 -to data_in_display[6]
-set_location_assignment PIN_V23 -to data_in_display[5]
-set_location_assignment PIN_W24 -to data_in_display[4]
-set_location_assignment PIN_W22 -to data_in_display[3]
-set_location_assignment PIN_Y24 -to data_in_display[2]
-set_location_assignment PIN_Y23 -to data_in_display[1]
-set_location_assignment PIN_AA24 -to data_in_display[0]
+set_location_assignment PIN_AA14 -to clk
 set_location_assignment PIN_AD27 -to data_display[13]
 set_location_assignment PIN_AF30 -to data_display[12]
 set_location_assignment PIN_AF29 -to data_display[11]
@@ -89,25 +66,18 @@ set_location_assignment PIN_AG27 -to data_display[3]
 set_location_assignment PIN_AE28 -to data_display[2]
 set_location_assignment PIN_AE27 -to data_display[1]
 set_location_assignment PIN_AE26 -to data_display[0]
-set_location_assignment PIN_AB22 -to addr_display[13]
-set_location_assignment PIN_AB25 -to addr_display[12]
-set_location_assignment PIN_AB28 -to addr_display[11]
-set_location_assignment PIN_AC25 -to addr_display[10]
-set_location_assignment PIN_AD25 -to addr_display[9]
-set_location_assignment PIN_AC27 -to addr_display[8]
-set_location_assignment PIN_AD26 -to addr_display[7]
-set_location_assignment PIN_AC30 -to addr_display[6]
-set_location_assignment PIN_AC29 -to addr_display[5]
-set_location_assignment PIN_AD30 -to addr_display[4]
-set_location_assignment PIN_AC28 -to addr_display[3]
-set_location_assignment PIN_AD29 -to addr_display[2]
-set_location_assignment PIN_AE29 -to addr_display[1]
-set_location_assignment PIN_AB23 -to addr_display[0]
-set_location_assignment PIN_AF14 -to clk
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name VERILOG_FILE src/control_unit.v
 set_global_assignment -name VERILOG_FILE src/special_registers.v
 set_global_assignment -name VERILOG_FILE src/alu.v
 set_global_assignment -name VERILOG_FILE src/seven_seg_display.v
 set_global_assignment -name VERILOG_FILE src/memory.v
 set_global_assignment -name VERILOG_FILE src/cpu.v
+
+set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
+set_location_assignment PIN_AB12 -to addr[3]
+set_location_assignment PIN_AC12 -to addr[7]
+set_location_assignment PIN_AF9 -to addr[11]
+set_location_assignment PIN_AF10 -to addr[15]
+set_location_assignment PIN_W15 -to reset
+set_location_assignment PIN_AA15 -to load_addr
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

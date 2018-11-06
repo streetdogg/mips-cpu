@@ -1,7 +1,7 @@
 PROJECT=cpu
 
 # Source files
-SRC_FILES = src/cpu.v src/memory.v src/seven_seg_display.v cpu.qsf
+SRC_FILES = src/cpu.v src/memory.v src/seven_seg_display.v src/special_registers.v src/control_unit.v cpu.qsf
 
 # Quartus prime 18 build tools
 QP_ANALYSIS_SYNTHESIS = quartus_map
