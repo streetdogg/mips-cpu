@@ -42,23 +42,23 @@ endmodule
  */
 module module_register_bank #(parameter REGISTER_COUNT=32, REGISTER_WIDTH=32, ADDRESS_BITS=5)
                              (input clk,
-                              input [ADDRESS_BITS-1:0] rd_addr_1, rd_addr_2, wr_addr,
+                              input [ADDRESS_BITS-1:0] ra, rb, rc,
                               input wr_en,
                               input [REGISTER_WIDTH-1:0] data_in,
-                              output reg [REGISTER_WIDTH-1:0] d_out_1, d_out_2);
+                              output reg [REGISTER_WIDTH-1:0] ro1, ro2);
 
     // Create a Register Bank
     reg [REGISTER_WIDTH-1:0] reg_file [0:REGISTER_COUNT-1];
 
     always @(posedge clk) begin
         // Output the content of the selected registers
-        d_out_1 <= reg_file[rd_addr_1];
-        d_out_2 <= reg_file[rd_addr_2];
+        ro1 <= reg_file[ra];
+        ro2 <= reg_file[rb];
 
         // Last register is always Zero!
         reg_file[REGISTER_COUNT-1] <= 0;
 
         // Load in the appropriate register when wr_en is true
-        if (wr_en) reg_file[wr_addr] <= data_in;
+        if (wr_en) reg_file[rc] <= data_in;
     end
 endmodule
