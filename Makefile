@@ -30,7 +30,7 @@ all: $(SRC_FILES)
 
 # Clean the workspace
 clean:
-	rm -rf db/ incremental_db/ output_files/ *.txt *.qpf *.qws
+	rm -rf db/ simulation/* incremental_db/ output_files/ *.txt *.qpf *.qws src/*.bak *.rpt
 
 # Upload the binary to the board
 upload: $(OUTPUT_FILE)

@@ -1,72 +1,59 @@
 /*
  * Implements PC testing module
  */
-module cpu #(parameter WORD_SIZE=8, ADDR_WIDTH=8)
-            (input sys_clk, reset, load_addr, hlt,
-				 input [31:0] addr,
-             output [13:0] data_display);
+module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=3, REG_WIDTH=5)
+            (input clk, rst);
 
-    wire [WORD_SIZE-1:0] inst_addr, instruction, data, alu_data, imm_data, ro1, ro2, status;
-    wire clk, rst, load, ra, rb, rc, alu_op, wr_en, sub_en, zero;
+    /*
+     * This implementation shall check the working of PC, register file and ALU
+     * Based on REG and IMM instructions.
+     */
 
-    reg [31:0] ad = 0;
-    assign rst = ~reset;
-    assign load = ~load_addr;
+    // Wires to connect blocks together
+    wire [WORD_SIZE-1:0] pc_to_iram, alu_result, reg_o_a, reg_o_b, sav_to_reg, inst;
+    wire [REG_WIDTH-1:0] reg_a, reg_b, reg_c;
+    wire [WORD_SIZE-OPCODE_WIDTH-REG_WIDTH-1:0] imm_data;
+    wire alu_op, reg_wr_en, imm_op, reset;
 
-    // choose between ALU operation and immediate value
-    assign data = (alu_op) ? alu_data : imm_data;
-    assign clk = (hlt) ? 1'b0 : ~sys_clk;
+    assign sav_to_reg = imm_op ? imm_data : alu_result;
+    assign reg_a = inst[28:24];
+    assign reg_b = inst[23:19];
+    assign reg_c = inst[18:14];
 
-    // Program counter
-    module_pc pc(.clk(clk),
-                 .reset(rst),
-                 .wr_en(load),
-                 .addr(ad),
-                 .pc_out(inst_addr));
+    assign reset = ~rst;
 
-    // IRAM: stores all instructions
-    module_instruction_memory iram(.clk(clk),
-                                   .addr(inst_addr),
-                                   .instruction(instruction));
+    // Program Counter
+    module_pc program_counter(.clk(clk),
+                              .reset(reset),
+                              .pc(pc_to_iram));
 
-    // Program counter
-    module_sr sr(.clk(clk),
-                 .reset(rst),
-                 .zero_fg(zero),
-                 .sr_out(status));
-
-    // Register file
-    module_register_bank gpr(.clk(clk),
-                             .ra(ra),
-                             .rb(rb),
-                             .rc(rc),
-                             .wr_en(wr_en),
-                             .data_in(data),
-                             .ro1(ro1),
-                             .ro2(ro2));
-
-    // ALU module
-    module_alu alu(.clk(clk),
-                   .A(ro1),
-                   .B(ro2),
-                   .sub(sub_en),
-                   .C(alu_data),
-                   .fg_zero(zero));
+    // Instruction memory
+    module_instruction_memory iram(.addr(pc_to_iram),
+                                   .instruction(inst));
 
     // Control Unit
-    module_control_unit cu(.clk(clk),
-                           .status(status),
-                           .instruction(instruction),
-                           .ra(ra),
-                           .rb(rb),
-                           .rc(rc),
-                           .data(imm_data),
-                           .wr_en(wr_en),
-                           .sub(sub_en),
-                           .alu_op(alu_op));
+    module_control_unit cu(.opcode(inst[31:29]),
+                           .reg_wr_en(reg_wr_en),
+                           .alu_op(alu_op),
+                           .imm_op(imm_op));
 
+    // Sign extend
+    module_sign_extend se(.in(inst[23:0]),
+                          .out(imm_data));
 
-    seven_seg_display data_display_high(clk, ro1[7:4], data_display[13:7]);
-    seven_seg_display data_display_low (clk, ro1[3:0], data_display[6:0]);
-
+    // General Purpose Registers
+    module_register_bank gpr(.clk(clk),
+                             .ra(reg_a),
+                             .rb(reg_b),
+                             .rc(reg_c),
+                             .wr_en(reg_wr_en),
+                             .data_in(sav_to_reg),
+                             .ro1(reg_o_a),
+                             .ro2(reg_o_b));
+    // ALU
+    module_alu alu(.clk(clk),
+                   .A(reg_o_a),
+                   .B(reg_o_b),
+                   .sub(alu_op),
+                   .C(alu_result));
 endmodule
