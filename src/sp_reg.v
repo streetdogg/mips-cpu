@@ -19,36 +19,32 @@
  */
 
 /*
- * Module Name:     Control Unit.
- * Functional Req:  Takes in status bits and outputs control signal to the datapath.
- * Input:           opcode.
- *                  opcode: determines the type of instruction.
- * Output:          wr, alu_op.
- *                  wr: Write enable to the Register file.
- *                  alu_op: Code for the ALU operation to be performed.
- * Parameters:      OPCODE.
- *                  OPCODE: Width of Opcode selection signals.
+ * Module Name:     Program Counter.
+ * Functional Req:  Increaments by 4 on each clock.
+ *                  cycle and outputs the number thus produced.
+ * Input:           Clock, Reset.
+ *                  Clock: Increaments on rising edge of the clock.
+ *                  Reset: Synchronously resets back to 0x00 if
+ *                         Reset is Logic High.
+ * Output:          Instruction Address.
+ * Parameters:      WORD_SIZE.
+ *                  WORD_SIZE: Width of the Program Counter.
  */
-module control_unit #(parameter OPCODE=4)
-                     (input [OPCODE-1:0] opcode,
-                      output wr,
-                      output [OPCODE-1:0] alu_op);
+module program_counter #(parameter WORD_SIZE=32)
+                        (input clk,
+                         input rst,
+                         output [WORD_SIZE-1:0] pc_out);
 
-    // FYI: The CU only controls the ALU and Reg file as of now.
-    assign alu_op = opcode;
-    reg wr_en;
+    // Declare the Program counter
+    reg [WORD_SIZE-1:0] pc_reg;
 
-    // Decide if Reg write should be allowed
-    always @(opcode) begin
-        case (opcode)
-            2'h00: wr_en <= 1'b1;
-            2'h01: wr_en <= 1'b1;
-            2'h02: wr_en <= 1'b1;
-            2'h03: wr_en <= 1'b1;
-            default: wr_en <= 1'b0;
-        endcase
+    // On every clock cycle increment the PC
+    // if an address is provided then load that,
+    // On reset make PC point to the 0th location.
+    always @(posedge clk) begin
+        if (rst) pc_reg <= 0;
+        else pc_reg <= pc_reg + 1;
     end
 
-    assign wr = wr_en;
-
+    assign pc_out = pc_reg;
 endmodule
