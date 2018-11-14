@@ -19,26 +19,32 @@
  */
 
 /*
- * Test bench to test the cPU implementation
+ * Module Name:     Program Counter.
+ * Functional Req:  Increaments by 4 on each clock.
+ *                  cycle and outputs the number thus produced.
+ * Input:           Clock, Reset.
+ *                  Clock: Increaments on rising edge of the clock.
+ *                  Reset: Synchronously resets back to 0x00 if
+ *                         Reset is Logic High.
+ * Output:          Instruction Address.
+ * Parameters:      WORD_SIZE.
+ *                  WORD_SIZE: Width of the Program Counter.
  */
-module cpu_tb();
+module program_counter #(parameter WORD_SIZE=32)
+                        (input clk,
+                         input rst,
+                         output [WORD_SIZE-1:0] pc_out);
 
-    reg clk, reset;
+    // Declare the Program counter
+    reg [WORD_SIZE-1:0] pc_reg;
 
-    cpu TU(.clk(clk),
-           .rst(reset));
-
-    initial begin
-        clk = 1'b0;
-        reset = 1'b1;
-        #10
-        reset = 1'b0;
-        #10
-        reset = 1'b1;
-        #500
-        $finish;
+    // On every clock cycle increment the PC
+    // if an address is provided then load that,
+    // On reset make PC point to the 0th location.
+    always @(posedge clk) begin
+        if (rst) pc_reg <= 0;
+        else pc_reg <= pc_reg + 1;
     end
 
-    always #10 clk = ~clk;
-
+    assign pc_out = pc_reg;
 endmodule
