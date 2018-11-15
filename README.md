@@ -1,5 +1,5 @@
 # What is This?
-This repository is an implementation of an 8-Bit CPU, Assembly language for it and some for of higher level language compiler tools.
+This repository is an implementation of subset of 32 Bit MIPS instruction set, Assembly language for it and some for of higher level language compiler tools.
 
 # Phases of work
 This project is under active development. Split into various phases, the progress of which is as below:
