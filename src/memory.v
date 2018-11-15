@@ -50,7 +50,8 @@ module instruction_memory #(parameter ADDRESS_BITS=32, MEMORY_DEPTH=1024, WORD_S
     initial instruction_memory[1] = 32'b0001_00011_00000_00001_00000_00000000;
     initial instruction_memory[2] = 32'b0010_00100_00000_00001_00000_00000000;
     initial instruction_memory[3] = 32'b0011_00101_00000_00001_00000_00000000;
-
+    initial instruction_memory[4] = 32'b0101_11111_00000_00000_00000_00000000;
+    initial instruction_memory[5] = 32'b0100_00110_11111_00000_00000_00000000;
 endmodule
 
 
@@ -96,5 +97,38 @@ module register_bank #(parameter REGISTER_COUNT=32, REGISTER_WIDTH=32, ADDRESS_B
     // Dummy values for testing
     initial reg_file[0] = 8'h00_00_00_02;
     initial reg_file[1] = 8'h00_00_00_05;
+endmodule
 
+/*
+ * Module Name:     Data Memory.
+ * Functional Req:  Takes in an address and outputs the WORD at the location.
+ *                  If write is enabled, then writes a WORD at given location
+ * Input:           addr, d_in, wr.
+ *                  addr: Address of which the WORD needs to be fetched/written.
+ *                  d_in: Data to be written.
+ *                  wr:   Write enable.
+ * Output:          d_out.
+ *                  d_out: WORD at the given address
+ * Parameters:      ADDRESS_BITS, MEMORY_DEPTH, WORD_SIZE.
+ *                  ADDRESS_BITS: width of input address.
+ *                  MEMORY_DEPTH: Depth of Instruction memory in terms of num of
+ *                                instructions.
+ *                  WORD_SIZE:    Size of the Instruction word.
+ */
+module data_memory #(parameter ADDRESS_BITS=32, MEMORY_DEPTH=64, WORD_SIZE=32)
+                    (input  [ADDRESS_BITS-1:0] addr,
+                     input  [WORD_SIZE-1:0]    d_in,
+                     input                     wr,
+                     output [WORD_SIZE-1:0]    d_out);
+
+    // Create the memory
+    reg [WORD_SIZE-1:0] data_memory [0:MEMORY_DEPTH-1];
+    reg [WORD_SIZE-1:0] data_out;
+
+    always @(addr or wr) begin
+        if (wr) data_memory[addr] <= d_in;
+        else data_out <= data_memory[addr];
+    end
+
+    assign d_out = data_out;
 endmodule

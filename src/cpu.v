@@ -35,18 +35,22 @@ module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=4, REG_WIDTH=5)
             (input clk, rst);
 
         // Wires to connect the modules
-        wire reset, wr, e, l, g, z;
-        wire [WORD_SIZE-1:0] pc_iram_addr, iram_inst, ra_o, rb_o, alu_out;
+        wire reset, reg_wr, data_wr, e, l, g, z, ld, st;
+        wire [WORD_SIZE-1:0] pc_iram_addr, iram_inst, ra_o, rb_o, alu_in, reg_save_data, alu_out, dram_out;
         wire [OPCODE_WIDTH-1:0] opcode, operation;
         wire [REG_WIDTH-1:0] ra, rb, rc;
+        wire [17:0] imm_data;
 
-        assign opcode = iram_inst[31:28];
-        assign ra     = iram_inst[27:23];
-        assign rb     = iram_inst[22:18];
-        assign rc     = iram_inst[17:13];
+        assign opcode   = iram_inst[31:28];
+        assign ra       = iram_inst[27:23];
+        assign rb       = (st) ? iram_inst[27:23] : iram_inst[22:18];
+        assign rc       = (st) ? iram_inst[22:18] : iram_inst[17:13];
+        assign imm_data = iram_inst[17:0];
 
         // If hooked to FPGA a reset is active low.
         assign reset = ~rst;
+        assign reg_save_data = (ld) ? dram_out : alu_out;
+        assign alu_in = (ld || st) ? imm_data : rb_o;
 
         // PC
         program_counter pc (.clk(clk),
@@ -60,14 +64,14 @@ module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=4, REG_WIDTH=5)
         register_bank gpr (.ra(ra),
                            .rb(rb),
                            .rc(rc),
-                           .wr(wr),
-                           .d_in(alu_out),
+                           .wr(reg_wr),
+                           .d_in(reg_save_data),
                            .da_o(ra_o),
                            .db_o(rb_o));
 
         // ALU
         module_alu  alu (.a_in(ra_o),
-                         .b_in(rb_o),
+                         .b_in(alu_in),
                          .operation(operation),
                          .out(alu_out),
                          .z(z),
@@ -77,6 +81,15 @@ module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=4, REG_WIDTH=5)
 
         // CU
         control_unit cu (.opcode(opcode),
-                         .wr(wr),
+                         .reg_wr(reg_wr),
+                         .data_wr(data_wr),
+                         .ld(ld),
+                         .st(st),
                          .alu_op(operation));
+
+        // DRAM
+        data_memory dram (.addr(alu_out),
+                          .d_in(rb_o),
+                          .wr(data_wr),
+                          .d_out(dram_out));
 endmodule

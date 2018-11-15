@@ -23,32 +23,72 @@
  * Functional Req:  Takes in status bits and outputs control signal to the datapath.
  * Input:           opcode.
  *                  opcode: determines the type of instruction.
- * Output:          wr, alu_op.
- *                  wr: Write enable to the Register file.
+ * Output:          reg_wr, alu_op.
+ *                  reg_wr: write enable to the Register file.
  *                  alu_op: Code for the ALU operation to be performed.
  * Parameters:      OPCODE.
  *                  OPCODE: Width of Opcode selection signals.
  */
 module control_unit #(parameter OPCODE=4)
                      (input [OPCODE-1:0] opcode,
-                      output wr,
+                      output reg_wr, data_wr, ld, st,
                       output [OPCODE-1:0] alu_op);
 
     // FYI: The CU only controls the ALU and Reg file as of now.
     assign alu_op = opcode;
-    reg wr_en;
+    reg reg_wr_en, data_wr_en, load_inst, store_inst;
 
-    // Decide if Reg write should be allowed
+    // Decide if Reg reg_write should be allowed
     always @(opcode) begin
         case (opcode)
-            2'h00: wr_en <= 1'b1;
-            2'h01: wr_en <= 1'b1;
-            2'h02: wr_en <= 1'b1;
-            2'h03: wr_en <= 1'b1;
-            default: wr_en <= 1'b0;
+            0: begin
+                reg_wr_en <= 1'b1;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b0;
+                store_inst <= 1'b0;
+                end
+            1: begin
+                reg_wr_en <= 1'b1;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b0;
+                store_inst <= 1'b0;
+                end
+            2: begin
+                reg_wr_en <= 1'b1;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b0;
+                store_inst <= 1'b0;
+                end
+            3: begin
+                reg_wr_en <= 1'b1;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b0;
+                store_inst <= 1'b0;
+                end
+            4: begin
+                reg_wr_en <= 1'b0;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b1;
+                store_inst <= 1'b0;
+                end
+            5: begin
+                reg_wr_en <= 1'b0;
+                data_wr_en <= 1'b1;
+                load_inst <= 1'b0;
+                store_inst <= 1'b1;
+                end
+            default: begin
+                reg_wr_en <= 1'b0;
+                data_wr_en <= 1'b0;
+                load_inst <= 1'b0;
+                store_inst <= 1'b0;
+            end
         endcase
     end
 
-    assign wr = wr_en;
+    assign ld = load_inst;
+    assign st = store_inst;
+    assign reg_wr = reg_wr_en;
+    assign data_wr = data_wr_en;
 
 endmodule
