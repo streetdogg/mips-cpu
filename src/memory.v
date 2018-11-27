@@ -52,7 +52,8 @@ module instruction_memory #(parameter ADDRESS_BITS=32, MEMORY_DEPTH=1024, WORD_S
     initial instruction_memory[3] = 32'b010_00000_00001_00101_00000_000000000;
     initial instruction_memory[4] = 32'b101_00110_00000_00000_00000_000000000;
     initial instruction_memory[5] = 32'b111_00111_00000_00000_00000_000000000;
-    initial instruction_memory[6] = 32'b100_11111_11111_11111_11111_111111001;
+    initial instruction_memory[6] = 32'b110_00110_00111_00000_00000_000000001;
+    initial instruction_memory[8] = 32'b100_11111_11111_11111_11111_111111001;
 endmodule
 
 

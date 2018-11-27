@@ -64,6 +64,6 @@ module module_alu #(parameter BUS_WIDTH=32, OPCODE=3)
     end
 
     assign out  = (alu_en == 1'b1) ? result : 0;
-    assign zero = (result == 0) ? 1'b0 : 1'b1;
+    assign zero = (result == 0) ? 1'b1 : 1'b0;
 
 endmodule
