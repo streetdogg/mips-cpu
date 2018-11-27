@@ -46,12 +46,13 @@ module instruction_memory #(parameter ADDRESS_BITS=32, MEMORY_DEPTH=1024, WORD_S
 
     // TODO: These register value assignment should be removed after
     // a way to program the instruction memory has been provided
-    initial instruction_memory[0] = 32'b0000_00010_00000_00001_00000_00000000;
-    initial instruction_memory[1] = 32'b0001_00011_00000_00001_00000_00000000;
-    initial instruction_memory[2] = 32'b0010_00100_00000_00001_00000_00000000;
-    initial instruction_memory[3] = 32'b0011_00101_00000_00001_00000_00000000;
-    initial instruction_memory[4] = 32'b0101_11111_00000_00000_00000_00000000;
-    initial instruction_memory[5] = 32'b0100_00110_11111_00000_00000_00000000;
+    initial instruction_memory[0] = 32'b000_00000_00001_00010_00000_000000000;
+    initial instruction_memory[1] = 32'b001_00000_00001_00011_00000_000000000;
+    initial instruction_memory[2] = 32'b011_00000_00001_00100_00000_000000000;
+    initial instruction_memory[3] = 32'b010_00000_00001_00101_00000_000000000;
+    initial instruction_memory[4] = 32'b101_00110_00000_00000_00000_000000000;
+    initial instruction_memory[5] = 32'b111_00111_00000_00000_00000_000000000;
+    initial instruction_memory[6] = 32'b100_11111_11111_11111_11111_111111001;
 endmodule
 
 
@@ -86,17 +87,48 @@ module register_bank #(parameter REGISTER_COUNT=32, REGISTER_WIDTH=32, ADDRESS_B
     // Last register is always Zero!
     initial reg_file[REGISTER_COUNT-1] = 1'd0;
 
-    assign da_o = reg_file[rb];
-    assign db_o = reg_file[rc];
+    assign da_o = reg_file[ra];
+    assign db_o = reg_file[rb];
 
-    always @(wr) begin
+    always @(wr or d_in) begin
         // Load in the appropriate register when wr is true
-        reg_file[ra] <= d_in;
+        if (wr)
+            reg_file[rc] <= d_in;
     end
 
     // Dummy values for testing
-    initial reg_file[0] = 8'h00_00_00_02;
-    initial reg_file[1] = 8'h00_00_00_05;
+    initial reg_file[0]  = 8'h00_00_00_02;
+    initial reg_file[1]  = 8'h00_00_00_05;
+    initial reg_file[2]  = 8'h00_00_00_00;
+    initial reg_file[3]  = 8'h00_00_00_00;
+    initial reg_file[4]  = 8'h00_00_00_00;
+    initial reg_file[5]  = 8'h00_00_00_00;
+    initial reg_file[6]  = 8'h00_00_00_ff;
+    initial reg_file[7]  = 8'h00_00_00_00;
+    initial reg_file[8]  = 8'h00_00_00_00;
+    initial reg_file[9]  = 8'h00_00_00_00;
+    initial reg_file[10] = 8'h00_00_00_00;
+    initial reg_file[11] = 8'h00_00_00_00;
+    initial reg_file[12] = 8'h00_00_00_00;
+    initial reg_file[13] = 8'h00_00_00_00;
+    initial reg_file[14] = 8'h00_00_00_00;
+    initial reg_file[15] = 8'h00_00_00_00;
+    initial reg_file[16] = 8'h00_00_00_00;
+    initial reg_file[17] = 8'h00_00_00_00;
+    initial reg_file[18] = 8'h00_00_00_00;
+    initial reg_file[19] = 8'h00_00_00_00;
+    initial reg_file[20] = 8'h00_00_00_00;
+    initial reg_file[21] = 8'h00_00_00_00;
+    initial reg_file[22] = 8'h00_00_00_00;
+    initial reg_file[23] = 8'h00_00_00_00;
+    initial reg_file[24] = 8'h00_00_00_00;
+    initial reg_file[25] = 8'h00_00_00_00;
+    initial reg_file[26] = 8'h00_00_00_00;
+    initial reg_file[27] = 8'h00_00_00_00;
+    initial reg_file[28] = 8'h00_00_00_00;
+    initial reg_file[29] = 8'h00_00_00_00;
+    initial reg_file[30] = 8'h00_00_00_00;
+    initial reg_file[31] = 8'h00_00_00_00;
 endmodule
 
 /*

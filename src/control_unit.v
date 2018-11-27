@@ -23,72 +23,56 @@
  * Functional Req:  Takes in status bits and outputs control signal to the datapath.
  * Input:           opcode.
  *                  opcode: determines the type of instruction.
- * Output:          reg_wr, alu_op.
- *                  reg_wr: write enable to the Register file.
- *                  alu_op: Code for the ALU operation to be performed.
+ * Output:          ld, st, beq, j, alu_en.
+ *                  ld:     TRUE if the instruuction requires loading into register from memory.
+ *                  st:     TRUE is a register value is to be stored into the data memory.
+ *                  beq:    TRUE if give instruction is 'Branch if Equal'
+ *                  j:      TRUE if instruction is unconditional jump.
+ *                  alu_en: TRUE if alu operation is needed.
+ *                  alu_op: ALU operation to be performed.
  * Parameters:      OPCODE.
  *                  OPCODE: Width of Opcode selection signals.
  */
-module control_unit #(parameter OPCODE=4)
+module control_unit #(parameter OPCODE=3)
                      (input [OPCODE-1:0] opcode,
-                      output reg_wr, data_wr, ld, st,
+                      output ld, st, beq, j, alu_en,
                       output [OPCODE-1:0] alu_op);
 
-    // FYI: The CU only controls the ALU and Reg file as of now.
+    // Constants for improving readibility
+    parameter ADD = 3'b000;
+    parameter SUB = 3'b001;
+    parameter AND = 3'b011;
+    parameter OR  = 3'b010;
+    parameter LD  = 3'b111;
+    parameter ST  = 3'b101;
+    parameter BEQ = 3'b110;
+    parameter J   = 3'b100;
+
+    // alu_operation is same as opcode.
     assign alu_op = opcode;
-    reg reg_wr_en, data_wr_en, load_inst, store_inst;
+
+    // control signals in order => ld, st, beq, j, alu_en
+    reg [4:0] control_sig;
 
     // Decide if Reg reg_write should be allowed
     always @(opcode) begin
         case (opcode)
-            0: begin
-                reg_wr_en <= 1'b1;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b0;
-                store_inst <= 1'b0;
-                end
-            1: begin
-                reg_wr_en <= 1'b1;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b0;
-                store_inst <= 1'b0;
-                end
-            2: begin
-                reg_wr_en <= 1'b1;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b0;
-                store_inst <= 1'b0;
-                end
-            3: begin
-                reg_wr_en <= 1'b1;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b0;
-                store_inst <= 1'b0;
-                end
-            4: begin
-                reg_wr_en <= 1'b0;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b1;
-                store_inst <= 1'b0;
-                end
-            5: begin
-                reg_wr_en <= 1'b0;
-                data_wr_en <= 1'b1;
-                load_inst <= 1'b0;
-                store_inst <= 1'b1;
-                end
-            default: begin
-                reg_wr_en <= 1'b0;
-                data_wr_en <= 1'b0;
-                load_inst <= 1'b0;
-                store_inst <= 1'b0;
-            end
+            ADD:     control_sig <= 5'b00001;
+            SUB:     control_sig <= 5'b00001;
+            AND:     control_sig <= 5'b00001;
+            OR:      control_sig <= 5'b00001;
+            LD:      control_sig <= 5'b10000;
+            ST:      control_sig <= 5'b01000;
+            BEQ:     control_sig <= 5'b00100;
+            J:       control_sig <= 5'b00010;
+            default: control_sig <= 5'b00000;
         endcase
     end
 
-    assign ld = load_inst;
-    assign st = store_inst;
-    assign reg_wr = reg_wr_en;
-    assign data_wr = data_wr_en;
+    assign ld      = control_sig[4];
+    assign st      = control_sig[3];
+    assign beq     = control_sig[2];
+    assign j       = control_sig[1];
+    assign alu_en  = control_sig[0];
 
 endmodule

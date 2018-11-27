@@ -22,7 +22,7 @@
  * Module Name:     ALU.
  * Functional Req:  Performs Arithematic and Logical Operations
  *                  and ouputs result and status flags.
- * Input:           a_in, b_in, operation.
+ * Input:           a_in, b_in, operation, alu_en.
  *                  a_in: Operand 1.
  *                  b_in: Operand 2.
  *                  operation:  Operation to be performed by the CPU
@@ -30,48 +30,40 @@
  *                              SUB: 0x01.
  *                              AND: 0x02.
  *                              OR:  0x03.
- * Output:          out, z, g, l, e.
- *                  out: Output of the computation.
- *                  z: Zero Flag, set if the diff of operands is zero.
- *                  g: Greater than Flag, set if a_in > b_in
- *                  l: Less than Flag, set if a_in < b_in
- *                  e: Equal Flag, set if a_in == b_in
+ *                  alu_en: Outputs result if TRUE else outputs 0.
+ * Output:          out, zero.
+ *                  out:  Output of the computation.
+ *                  zero: Zero Flag, set if the diff of operands is zero.
  * Parameters:      BUS_WIDTH, OPCODE.
  *                  BUS_WIDTH: Width of result.
  *                  OPCODE: Width of Opcode selection signals.
  */
-module module_alu #(parameter BUS_WIDTH=32, OPCODE=4)
+module module_alu #(parameter BUS_WIDTH=32, OPCODE=3)
                    (input  [BUS_WIDTH-1:0] a_in, b_in,
                     input  [OPCODE-1:0] operation,
+                    input  alu_en,
                     output [BUS_WIDTH-1:0] out,
-                    output z, g, l, e);
+                    output zero);
 
-    reg [BUS_WIDTH-1:0] result;
+    // Constants for improving readibility
+    parameter ADD = 3'b000;
+    parameter SUB = 3'b001;
+    parameter AND = 3'b011;
+    parameter OR  = 3'b010;
 
-    always @(operation) begin
+    reg [BUS_WIDTH-1:0] result = 0;
+
+    always @(operation or a_in or b_in) begin
         case (operation)
-            // ADD
-            2'h00: result <= a_in + b_in;
-
-            // SUB
-            2'h01: result <= a_in - b_in;
-
-            // AND
-            2'h02: result <= a_in & b_in;
-
-            // OR
-            2'h03: result <= a_in | b_in;
-
-            // Meta Stable
+            ADD:     result <= a_in + b_in;
+            SUB:     result <= a_in - b_in;
+            AND:     result <= a_in & b_in;
+            OR:      result <= a_in | b_in;
             default: result <= 0;
         endcase
     end
 
-    assign out = result;
-
-    assign e = (a_in == b_in) ? 1'b1 : 1'b0;
-    assign l = (a_in < b_in)  ? 1'b1 : 1'b0;
-    assign g = (a_in > b_in)  ? 1'b1 : 1'b0;
-    assign z = (a_in - b_in)  ? 1'b0 : 1'b1;
+    assign out  = (alu_en == 1'b1) ? result : 0;
+    assign zero = (result == 0) ? 1'b0 : 1'b1;
 
 endmodule

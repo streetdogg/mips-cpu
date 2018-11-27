@@ -31,65 +31,63 @@
  *                  OPCODE_WIDTH: Opcode signal width.
  *                  REG_WIDTH: Register addressing signal width.
  */
-module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=4, REG_WIDTH=5)
+module cpu #(parameter WORD_SIZE=32, ADDR_WIDTH=32, OPCODE_WIDTH=3, REG_WIDTH=5)
             (input clk, rst);
 
-        // Wires to connect the modules
-        wire reset, reg_wr, data_wr, e, l, g, z, ld, st;
-        wire [WORD_SIZE-1:0] pc_iram_addr, iram_inst, ra_o, rb_o, alu_in, reg_save_data, alu_out, dram_out;
-        wire [OPCODE_WIDTH-1:0] opcode, operation;
-        wire [REG_WIDTH-1:0] ra, rb, rc;
-        wire [17:0] imm_data;
+    // Control Signals
+    wire ld, st, beq, j, alu_en, zero, rb_wr_en;
+    wire [OPCODE_WIDTH-1 : 0] alu_op, opcode;
 
-        assign opcode   = iram_inst[31:28];
-        assign ra       = iram_inst[27:23];
-        assign rb       = (st) ? iram_inst[27:23] : iram_inst[22:18];
-        assign rc       = (st) ? iram_inst[22:18] : iram_inst[17:13];
-        assign imm_data = iram_inst[17:0];
+    wire [WORD_SIZE-1 : 0] instruction, a, b, c, mem_out, alu_out, pc_out, offset;
+    wire [WORD_SIZE-1-OPCODE_WIDTH : 0] mem_addr;
+    wire [REG_WIDTH-1:0] ra, rb, rc;
 
-        // If hooked to FPGA a reset is active low.
-        assign reset = ~rst;
-        assign reg_save_data = (ld) ? dram_out : alu_out;
-        assign alu_in = (ld || st) ? imm_data : rb_o;
+    assign opcode = instruction[WORD_SIZE-1 : WORD_SIZE-OPCODE_WIDTH];
+    assign c = (ld) ? mem_out : alu_out;
+    assign rb_wr_en = ld || alu_en;
+    assign mem_addr = 0;
+    assign ra = instruction[WORD_SIZE-1-OPCODE_WIDTH: WORD_SIZE-OPCODE_WIDTH-REG_WIDTH];
+    assign rb = instruction[WORD_SIZE-1-OPCODE_WIDTH-REG_WIDTH : WORD_SIZE-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH];
+    assign rc = (ld) ? ra : instruction[WORD_SIZE-1-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH : WORD_SIZE-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH-REG_WIDTH];
+    assign offset = (instruction[WORD_SIZE-1-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH]) ? {13'b111_11111_11111, instruction[WORD_SIZE-1-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH: 0]} : {13'b000_00000_00000, instruction[WORD_SIZE-1-OPCODE_WIDTH-REG_WIDTH-REG_WIDTH-1: 0]};
 
-        // PC
-        program_counter pc (.clk(clk),
-                            .rst(reset),
-                            .pc_out(pc_iram_addr));
-        // IRAM
-        instruction_memory iram (.addr(pc_iram_addr),
-                                 .instruction(iram_inst));
+    control_unit cu(.opcode(opcode),
+                    .ld(ld),
+                    .st(st),
+                    .beq(beq),
+                    .j(j),
+                    .alu_en(alu_en),
+                    .alu_op(alu_op));
 
-        // REG FILE
-        register_bank gpr (.ra(ra),
-                           .rb(rb),
-                           .rc(rc),
-                           .wr(reg_wr),
-                           .d_in(reg_save_data),
-                           .da_o(ra_o),
-                           .db_o(rb_o));
+    module_alu alu(.a_in(a),
+                   .b_in(b),
+                   .operation(alu_op),
+                   .alu_en(alu_en),
+                   .out(alu_out),
+                   .zero(zero));
 
-        // ALU
-        module_alu  alu (.a_in(ra_o),
-                         .b_in(alu_in),
-                         .operation(operation),
-                         .out(alu_out),
-                         .z(z),
-                         .g(g),
-                         .l(l),
-                         .e(e));
+    program_counter pc(.clk(clk),
+                       .rst(rst),
+                       .beq(beq),
+                       .zero(zero),
+                       .j(j),
+                       .offset(offset),
+                       .pc_out(pc_out));
 
-        // CU
-        control_unit cu (.opcode(opcode),
-                         .reg_wr(reg_wr),
-                         .data_wr(data_wr),
-                         .ld(ld),
-                         .st(st),
-                         .alu_op(operation));
+    instruction_memory im(.addr(pc_out),
+                          .instruction(instruction));
 
-        // DRAM
-        data_memory dram (.addr(alu_out),
-                          .d_in(rb_o),
-                          .wr(data_wr),
-                          .d_out(dram_out));
+    register_bank r_b(.ra(ra),
+                      .rb(rb),
+                      .rc(rc),
+                      .wr(rb_wr_en),
+                      .d_in(c),
+                      .da_o(a),
+                      .db_o(b));
+
+    data_memory dm(.addr({3'b000, mem_addr}),
+                   .d_in(a),
+                   .wr(st),
+                   .d_out(mem_out));
+
 endmodule

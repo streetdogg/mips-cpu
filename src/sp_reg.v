@@ -30,21 +30,25 @@
  * Parameters:      WORD_SIZE.
  *                  WORD_SIZE: Width of the Program Counter.
  */
-module program_counter #(parameter WORD_SIZE=32)
-                        (input clk,
-                         input rst,
+module program_counter #(parameter WORD_SIZE=32, OPCODE_WIDTH=3, REG_WIDTH=5)
+                        (input clk, rst, beq, zero, j,
+                         input [WORD_SIZE-1 : 0] offset,
                          output [WORD_SIZE-1:0] pc_out);
 
     // Declare the Program counter
-    reg [WORD_SIZE-1:0] pc_reg;
+    reg [WORD_SIZE-1:0]  pc_reg;
+    wire [WORD_SIZE-1:0] pc_i, pc_new;
 
     // On every clock cycle increment the PC
     // if an address is provided then load that,
     // On reset make PC point to the 0th location.
     always @(posedge clk) begin
         if (rst) pc_reg <= 0;
-        else pc_reg <= pc_reg + 1;
+        else pc_reg <= pc_new;
     end
+
+    assign pc_i = pc_reg + 1;
+    assign pc_new = (j || (beq && zero)) ? (offset + pc_i) : pc_i;
 
     assign pc_out = pc_reg;
 endmodule
