@@ -11,6 +11,19 @@ Current activities are focused around building the control and data path. At the
 - Data Path
 - Turing complete ISA design [minimalistic]
 
+The ISA include the following instructions:\
+ADD: Adds two 32 bit signed numbers.\
+SUB: Substracts two 32 bit signed numbers.\
+AND: Logical ANDing of two 32 bit numbers.\
+OR: Logical ORing of two 32 bit numbers.\
+LD: Loads value from data memory to a given register.\
+ST: Stored value of a given register at a location in data memory.\
+BEQ: Branches if two 32 bit numbers are equal.\
+J: Unconditional jump to an address offset from program counter + 1.
+
+The block level CPU looks as below:
+![CPU Block diagram](doc/img/cpu.png)
+
 ## 2. Assembler Design
 Parked until ISA design is complete.
 
